@@ -1,11 +1,6 @@
-## My Project
+## This Repo contains source code for various blog and porject for Divyesh Sah
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+Pleaes refer to the individual README.MD in each of the respective folders for details on that project. 
 
 ## Security
 
