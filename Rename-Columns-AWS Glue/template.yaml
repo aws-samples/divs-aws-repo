@@ -1,0 +1,101 @@
+##  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+##  SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Description: SAM app that uses Amazon Lambda to process renaming of data files in S3 using AWs Glue.
+
+Parameters:
+
+  FileLandingBucketParameter:
+    Type: String
+    Default: 'file-landing-bucketv1'
+  FileDestinationBucketParameter:
+    Type: String
+    Default: 'file-destination-bucketv1'
+
+Resources:
+
+  ## S3 buckets
+  FileLandingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref FileLandingBucketParameter
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref FileDestinationBucketParameter
+  
+
+
+  ProcessDataFileRenameV1:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.6
+      CodeUri: .
+      Description: Lambda funciton to process renaming of data files using AWS Glue.
+      MemorySize: 128
+      Timeout: 300
+      Environment:
+        Variables:
+          GlueServiceRole: !GetAtt GlueServiceRole.Arn
+          DestinationBucket: !Ref FileDestinationBucketParameter
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - 'glue:GetCrawler'
+              - 'glue:BatchGetCrawlers'
+              - 'glue:StartCrawler'
+              - 'glue:StartJobRun'
+              - 'glue:CreateCrawler'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'iam:PassRole'
+            Resource: !GetAtt GlueServiceRole.Arn
+      Events:
+        BucketEvent1:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: FileLandingBucket
+            Events:
+              - 's3:ObjectCreated:*'
+
+  GlueServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sts:AssumeRole"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+                - "glue.amazonaws.com"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName : GlueServicePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                - 's3:*Object'
+                - 's3:ListBucket'
+                Resource: 
+                - !GetAtt DestinationBucket.Arn 
+                - !Sub 
+                  - arn:aws:s3:::${FileLandingBucket}*
+                  - { FileLandingBucket: !Ref FileLandingBucketParameter}
+
+         
+ 
+      
