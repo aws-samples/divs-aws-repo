@@ -1,4 +1,4 @@
-## This Repo contains source code for various blog and projects for Divyesh Sah for aws-samples
+## This Repo contains source code for various blog and projects by Divyesh Sah for aws-samples
 
 Pleaes refer to the individual README.MD in each of the respective folders for details on that project. 
 
