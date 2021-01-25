@@ -1,6 +1,6 @@
 ## Automating large scale dynamic mapping and re-naming of column names in data files using AWS Glue. Part-II
 
-This folder containe code artifcats reference in the blog. Please refer to the blog for details. 
+This folder contains code artifcats reference in the blog. Please refer to the blog for details. 
 
 ## Security
 
