@@ -24,23 +24,14 @@ userdata_dynamicframe = glueContext.create_dynamic_frame.from_catalog(
        database = "sampledb",
        table_name = args['FileName'])
 
-column_name_df = column_name_dynamicframe.toDF()
-data_name_df = userdata_dynamicframe.toDF()
+#Generate the applymapping script dynamically and apply it #on our dynamicframe data file
 
-column_names_array = column_name_df.columns
-data_names_array = data_name_df.columns
+mapping = []
+for x in range(0, len(userdata_dynamicframe.schema().fields)) :
+    mapping.append((userdata_dynamicframe.schema().fields[x].name,column_name_dynamicframe.schema().fields[x].name))
 
-command =""
-length = len(column_names_array)
-for x in range(length):
-    command += '("'+data_names_array[x]+'" , "' +column_names_array[x]+'"),'
-command = command[:-1]
-command = "applymapping1 = ApplyMapping.apply(frame = userdata_dynamicframe, mappings = [" + command + '], transformation_ctx = "applymapping1")'
-
-exec(command)
-print(command)
-datasink4 = glueContext.write_dynamic_frame.from_options(frame = applymapping1, connection_type = "s3", connection_options = {"path": "s3://"+args['DestinationBucketName']+"/"+args['FileName']+'/'+args['FileName']+'FileRenamed'}, format = "orc", transformation_ctx = "datasink4")
-
+userdata_dynamicframe = userdata_dynamicframe.apply_mapping(mapping)
+datasink4 = glueContext.write_dynamic_frame.from_options(frame = userdata_dynamicframe, connection_type = "s3", connection_options = {"path": "s3://"+args['DestinationBucketName']+"/"+args['FileName']+'/'+args['FileName']+'FileRenamed'}, format = "orc", transformation_ctx = "datasink4")
 
 ## @type: DataSource
 ## @args: [database = "sampledb", table_name = "orc_userdataorc", transformation_ctx = "datasource0"]
